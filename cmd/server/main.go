@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"user-api/api/handler"
 	"user-api/config"
+	"user-api/middleware"
 )
 
 func main() {
@@ -16,11 +17,11 @@ func main() {
 
 	// Routes
 	http.HandleFunc("/register", handler.RegisterUserHandler)
-	http.HandleFunc("/profile", handler.ProfileHandler)
-	http.HandleFunc("/profile/update", handler.UpdateUserHandler)
-	http.HandleFunc("/profile/delete", handler.DeleteUserHandler)
+	http.HandleFunc("/profile", middleware.JWTMiddleware(handler.ProfileHandler))
+	http.HandleFunc("/profile/update", middleware.JWTMiddleware(handler.UpdateUserHandler))
+	http.HandleFunc("/profile/delete", middleware.JWTMiddleware(handler.DeleteUserHandler))
 	http.HandleFunc("/login", handler.LoginHandler)
-	http.HandleFunc("/logout", handler.LogoutHandler)
+	http.HandleFunc("/logout", middleware.JWTMiddleware(handler.LogoutHandler))
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})

@@ -3,7 +3,6 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
-	"strings"
 	"user-api/store"
 	"user-api/util"
 )
@@ -46,37 +45,12 @@ func RegisterUserHandler(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
 	}
 }
 
+// ProfileHandler This handler has JWT Middleware; no need to check token manually
 func ProfileHandler(w http.ResponseWriter, r *http.Request) {
-	// Extract token from Authorization header
-	authHeader := r.Header.Get("Authorization")
-	if authHeader == "" {
-		http.Error(w, "Authorization header missing", http.StatusUnauthorized)
-		return
-	}
-
-	tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
-	if tokenStr == "" {
-		http.Error(w, "Token not provided", http.StatusUnauthorized)
-		return
-	}
-
-	if store.IsTokenBlacklisted(tokenStr) {
-		http.Error(w, "Token is blacklisted", http.StatusUnauthorized)
-		return
-	}
-
-	// Validate the token and extract claims
-	claims, err := util.ValidateToken(tokenStr)
-	if err != nil {
-		http.Error(w, "Invalid token", http.StatusUnauthorized)
-		return
-	}
-
-	// Fetch user data from the store
+	claims := r.Context().Value("claims").(*util.Claims)
 	user, err := store.GetUserByUsername(claims.Username)
 	if err != nil {
 		http.Error(w, "User not found", http.StatusNotFound)
@@ -95,35 +69,12 @@ func ProfileHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// UpdateUserHandler This handler has JWT Middleware; no need to check token manually
 func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
-	// Extract token from Authorization header
-	authHeader := r.Header.Get("Authorization")
-	if authHeader == "" {
-		http.Error(w, "Authorization header missing", http.StatusUnauthorized)
-		return
-	}
+	claims := r.Context().Value("claims").(*util.Claims)
 
-	tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
-	if tokenStr == "" {
-		http.Error(w, "Token not provided", http.StatusUnauthorized)
-		return
-	}
-
-	if store.IsTokenBlacklisted(tokenStr) {
-		http.Error(w, "Token is blacklisted", http.StatusUnauthorized)
-		return
-	}
-
-	// Validate the token and extract claims
-	claims, err := util.ValidateToken(tokenStr)
-	if err != nil {
-		http.Error(w, "Invalid token", http.StatusUnauthorized)
-		return
-	}
-
-	// Decode the request payload
 	var updatedUser store.User
-	err = json.NewDecoder(r.Body).Decode(&updatedUser)
+	err := json.NewDecoder(r.Body).Decode(&updatedUser)
 	if err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
@@ -146,38 +97,14 @@ func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
 	}
 }
 
+// DeleteUserHandler This handler has JWT Middleware; no need to check token manually
 func DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
-	// Extract token from Authorization header
-	authHeader := r.Header.Get("Authorization")
-	if authHeader == "" {
-		http.Error(w, "Authorization header missing", http.StatusUnauthorized)
-		return
-	}
+	claims := r.Context().Value("claims").(*util.Claims)
 
-	tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
-	if tokenStr == "" {
-		http.Error(w, "Token not provided", http.StatusUnauthorized)
-		return
-	}
-
-	if store.IsTokenBlacklisted(tokenStr) {
-		http.Error(w, "Token is blacklisted", http.StatusUnauthorized)
-		return
-	}
-
-	// Validate the token and extract claims
-	claims, err := util.ValidateToken(tokenStr)
-	if err != nil {
-		http.Error(w, "Invalid token", http.StatusUnauthorized)
-		return
-	}
-
-	// Delete user from the store
-	err = store.DeleteUserByUsername(claims.Username)
+	err := store.DeleteUserByUsername(claims.Username)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -190,6 +117,5 @@ func DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
 	}
 }
