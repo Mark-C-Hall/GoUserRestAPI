@@ -1,0 +1,23 @@
+# Binaries for programs and plugins
+*.exe
+*.dll
+*.so
+*.dylib
+*.out
+*.test
+
+# Dependency directories
+vendor/
+
+# JetBrains IDE
+.idea/
+
+# macOS-specific
+.DS_Store
+
+# Logs
+*.log
+
+# GoLand built binary files
+*.bin
+
