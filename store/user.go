@@ -15,13 +15,12 @@ type User struct {
 }
 
 type inMemoryStore struct {
-	users   []User
-	userMap map[string]*User
-	mutex   *sync.RWMutex
+	userMap   map[string]*User
+	userCount int
+	mutex     *sync.RWMutex
 }
 
 var store = inMemoryStore{
-	users:   make([]User, 0),
 	userMap: make(map[string]*User),
 	mutex:   &sync.RWMutex{},
 }
@@ -40,8 +39,8 @@ func CreateUser(u *User) error {
 	}
 	u.Password = hashedPassword
 
-	u.ID = len(store.users) + 1
-	store.users = append(store.users, *u)
+	store.userCount++
+	u.ID = store.userCount
 	store.userMap[u.Username] = u
 
 	return nil
@@ -83,5 +82,14 @@ func UpdateUser(u *User) error {
 }
 
 func DeleteUserByUsername(username string) error {
+	store.mutex.Lock()
+	defer store.mutex.Unlock()
+
+	_, exists := store.userMap[username]
+	if !exists {
+		return errors.New("user not found")
+	}
+	delete(store.userMap, username)
+
 	return nil
 }
