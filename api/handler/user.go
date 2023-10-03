@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"user-api/store"
-	"user-api/util"
 )
 
 func RegisterUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -16,14 +15,6 @@ func RegisterUserHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid payload request", http.StatusBadRequest)
 		return
 	}
-
-	// Hash password
-	hashedPassword, err := util.HashPassword(user.Password)
-	if err != nil {
-		http.Error(w, "Error hashing password", http.StatusInternalServerError)
-		return
-	}
-	user.Password = hashedPassword
 
 	// Store user in data store
 	err = store.CreateUser(&user)
