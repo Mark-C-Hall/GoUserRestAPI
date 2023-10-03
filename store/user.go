@@ -7,6 +7,8 @@ import (
 	"user-api/util"
 )
 
+// User represents a user with ID, username, email, and password fields.
+// ID, username, and email fields are tagged to be included in JSON serialization, while the password field is excluded.
 type User struct {
 	ID       int    `json:"id,omitempty"`
 	Username string `json:"username,omitempty"`
@@ -14,17 +16,23 @@ type User struct {
 	Password string
 }
 
+// inMemoryStore is an in-memory data structure used to store and manage user data.
 type inMemoryStore struct {
-	userMap   map[string]*User
-	userCount int
-	mutex     *sync.RWMutex
+	userMap   map[string]*User // A map to store user data by username as the key
+	userCount int              // Count of total users, used to assign unique IDs
+	mutex     *sync.RWMutex    // Mutex to ensure concurrent safe access to the userMap
 }
 
+// store is the in-memory database instance.
 var store = inMemoryStore{
 	userMap: make(map[string]*User),
 	mutex:   &sync.RWMutex{},
 }
 
+// CreateUser adds a new user to the in-memory store.
+// It first hashes the password using a utility function, then assigns a unique ID to the user
+// and finally adds the user to the userMap.
+// Returns an error if the username already exists or if there's an error hashing the password.
 func CreateUser(u *User) error {
 	store.mutex.Lock()
 	defer store.mutex.Unlock()
@@ -46,6 +54,8 @@ func CreateUser(u *User) error {
 	return nil
 }
 
+// GetUserByUsername retrieves a user from the in-memory store by username.
+// Returns the user and an error if the user is not found.
 func GetUserByUsername(username string) (User, error) {
 	store.mutex.RLock()
 	defer store.mutex.RUnlock()
@@ -57,6 +67,10 @@ func GetUserByUsername(username string) (User, error) {
 	return *user, nil
 }
 
+// UpdateUser updates the details of an existing user in the in-memory store.
+// It updates only the provided fields: email and password. For updating the password,
+// it first hashes the new password and then replaces the old one.
+// Returns an error if the user is not found or if there's an error hashing the password.
 func UpdateUser(u *User) error {
 	store.mutex.Lock()
 	defer store.mutex.Unlock()
@@ -81,6 +95,8 @@ func UpdateUser(u *User) error {
 	return nil
 }
 
+// DeleteUserByUsername removes a user from the in-memory store by username.
+// Returns an error if the user is not found.
 func DeleteUserByUsername(username string) error {
 	store.mutex.Lock()
 	defer store.mutex.Unlock()

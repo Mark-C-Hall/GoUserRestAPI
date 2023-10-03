@@ -5,6 +5,9 @@ import (
 	"user-api/util"
 )
 
+// TestAddAndGetUser tests the functionality of adding a user to the store and then retrieving them.
+// It uses table-driven testing to iterate over a slice of test cases, creating a user for each and
+// ensuring the added user can be retrieved by username.
 func TestAddAndGetUser(t *testing.T) {
 	tests := []struct {
 		user     User
@@ -15,22 +18,25 @@ func TestAddAndGetUser(t *testing.T) {
 	}
 
 	for _, tt := range tests {
+		// Create the user
 		err := CreateUser(&tt.user)
 		if err != nil {
 			t.Fatalf("Failed to create new user: %v", err)
 		}
 
+		// Retrieve and validate the created user
 		retrievedUser, err := GetUserByUsername(tt.user.Username)
 		if err != nil {
 			t.Fatalf("Failed to retrieve user: %v", err)
 		}
-
 		if tt.user.Username != retrievedUser.Username {
 			t.Fatalf("Expected %s, but got %s", tt.expected, retrievedUser.Username)
 		}
 	}
 }
 
+// TestNonExistentUser tests the behavior of trying to retrieve a user that doesn't exist.
+// The expected behavior is that an error should be returned.
 func TestNonExistentUser(t *testing.T) {
 	_, err := GetUserByUsername("Nobody")
 	if err == nil {
@@ -38,8 +44,11 @@ func TestNonExistentUser(t *testing.T) {
 	}
 }
 
+// TestUpdateUser tests the user update functionality.
+// It begins by creating a user, updates the user's email and password, and then validates
+// that the updates were applied correctly in the store.
 func TestUpdateUser(t *testing.T) {
-	// Setup: Create a user to be updated
+	// Create a user for testing the update
 	user := User{
 		Username: "UpdateTestUser",
 		Email:    "UpdateTest@email.com",
@@ -52,7 +61,7 @@ func TestUpdateUser(t *testing.T) {
 
 	// Update the user's details
 	updatedDetails := User{
-		Username: user.Username, // Username remains the same, as it's the key
+		Username: user.Username, // Using the same username since it's our retrieval key
 		Email:    "UpdatedTest@email.com",
 		Password: "updatedPassword",
 	}
@@ -61,24 +70,23 @@ func TestUpdateUser(t *testing.T) {
 		t.Fatalf("Failed to update user: %v", err)
 	}
 
-	// Retrieve the user and validate the updated details
+	// Retrieve and validate the updated user details
 	retrievedUser, err := GetUserByUsername(user.Username)
 	if err != nil {
 		t.Fatalf("Failed to retrieve updated user: %v", err)
 	}
-
 	if retrievedUser.Email != updatedDetails.Email {
 		t.Fatalf("Expected updated email %s, got %s", updatedDetails.Email, retrievedUser.Email)
 	}
-
-	// You'd probably use a function to check the hashed password matches the plain-text password here
 	if !util.CheckHashedPassword(updatedDetails.Password, retrievedUser.Password) {
 		t.Fatalf("Password was not updated correctly")
 	}
 }
 
+// TestDeleteUser tests the user deletion functionality.
+// It begins by creating a user, deletes it, and then ensures that the user no longer exists in the store.
 func TestDeleteUser(t *testing.T) {
-	// Setup: Create a user to be deleted
+	// Create a user for testing the delete functionality
 	user := User{
 		Username: "DeleteTestUser",
 		Email:    "DeleteTest@email.com",
@@ -89,13 +97,13 @@ func TestDeleteUser(t *testing.T) {
 		t.Fatalf("Failed to create user for deletion: %v", err)
 	}
 
-	// Delete the user
+	// Delete the created user
 	err = DeleteUserByUsername(user.Username)
 	if err != nil {
 		t.Fatalf("Failed to delete user: %v", err)
 	}
 
-	// Try to retrieve the user; expect an error since the user should no longer exist
+	// Ensure that the deleted user can't be retrieved
 	_, err = GetUserByUsername(user.Username)
 	if err == nil {
 		t.Fatal("Expected error retrieving deleted user, but got none")
