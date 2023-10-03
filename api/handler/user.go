@@ -64,6 +64,11 @@ func ProfileHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if store.IsTokenBlacklisted(tokenStr) {
+		http.Error(w, "Token is blacklisted", http.StatusUnauthorized)
+		return
+	}
+
 	// Validate the token and extract claims
 	claims, err := util.ValidateToken(tokenStr)
 	if err != nil {
@@ -101,6 +106,11 @@ func UpdateUserHandler(w http.ResponseWriter, r *http.Request) {
 	tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
 	if tokenStr == "" {
 		http.Error(w, "Token not provided", http.StatusUnauthorized)
+		return
+	}
+
+	if store.IsTokenBlacklisted(tokenStr) {
+		http.Error(w, "Token is blacklisted", http.StatusUnauthorized)
 		return
 	}
 
@@ -151,6 +161,11 @@ func DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
 	if tokenStr == "" {
 		http.Error(w, "Token not provided", http.StatusUnauthorized)
+		return
+	}
+
+	if store.IsTokenBlacklisted(tokenStr) {
+		http.Error(w, "Token is blacklisted", http.StatusUnauthorized)
 		return
 	}
 

@@ -21,7 +21,6 @@ func main() {
 	http.HandleFunc("/profile/delete", handler.DeleteUserHandler)
 	http.HandleFunc("/login", handler.LoginHandler)
 	http.HandleFunc("/logout", handler.LogoutHandler)
-	http.HandleFunc("/reset", handler.ResetHandler)
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})

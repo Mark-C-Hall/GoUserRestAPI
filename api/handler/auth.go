@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 	"user-api/store"
 	"user-api/util"
 )
@@ -54,9 +55,27 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
+	// Extract token from Authorization header
+	authHeader := r.Header.Get("Authorization")
+	if authHeader == "" {
+		http.Error(w, "Authorization header missing", http.StatusUnauthorized)
+		return
+	}
 
-}
+	tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
+	if tokenStr == "" {
+		http.Error(w, "Token not provided", http.StatusUnauthorized)
+		return
+	}
 
-func ResetHandler(w http.ResponseWriter, r *http.Request) {
+	// Blacklist the token
+	store.AddTokenToBlacklist(tokenStr)
 
+	// Return success response
+	w.WriteHeader(http.StatusOK)
+	_, err := w.Write([]byte("Logged out successfully"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }

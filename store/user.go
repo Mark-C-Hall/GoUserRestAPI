@@ -3,7 +3,6 @@ package store
 import (
 	"errors"
 	"fmt"
-	"sync"
 	"user-api/util"
 )
 
@@ -14,19 +13,6 @@ type User struct {
 	Username string `json:"username,omitempty"`
 	Email    string `json:"email,omitempty"`
 	Password string
-}
-
-// inMemoryStore is an in-memory data structure used to store and manage user data.
-type inMemoryStore struct {
-	userMap   map[string]*User // A map to store user data by username as the key
-	userCount int              // Count of total users, used to assign unique IDs
-	mutex     *sync.RWMutex    // Mutex to ensure concurrent safe access to the userMap
-}
-
-// store is the in-memory database instance.
-var store = inMemoryStore{
-	userMap: make(map[string]*User),
-	mutex:   &sync.RWMutex{},
 }
 
 // CreateUser adds a new user to the in-memory store.
