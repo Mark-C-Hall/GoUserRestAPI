@@ -9,6 +9,9 @@ import (
 	"user-api/util"
 )
 
+var isTokenBlacklisted = store.IsTokenBlacklisted
+var validateToken = util.ValidateToken
+
 // JWTMiddleware ensures that the provided JWT in the request header is valid,
 // not blacklisted, and puts its contents (claims and token) into the request's context.
 // If the token is not valid, it will respond with a 401 Unauthorized status.
@@ -22,13 +25,13 @@ func JWTMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		}
 
 		// Check if the token is blacklisted
-		if store.IsTokenBlacklisted(tokenStr) {
+		if isTokenBlacklisted(tokenStr) {
 			http.Error(w, "Token is blacklisted", http.StatusUnauthorized)
 			return
 		}
 
 		// Validate the token to get its claims
-		claims, err := util.ValidateToken(tokenStr)
+		claims, err := validateToken(tokenStr)
 		if err != nil {
 			http.Error(w, "Invalid token", http.StatusUnauthorized)
 			return
